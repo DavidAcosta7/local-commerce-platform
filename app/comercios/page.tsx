@@ -18,14 +18,22 @@ export default async function ComerciosPage({ searchParams }: PageProps) {
   const params = await searchParams
   const supabase = await createClient()
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
+  let user = null
   let profile = null
-  if (user) {
-    const { data } = await supabase.from("profiles").select("full_name, role").eq("id", user.id).single()
-    profile = data
+
+  try {
+    const {
+      data: { user: authUser },
+      error,
+    } = await supabase.auth.getUser()
+    if (!error && authUser) {
+      user = authUser
+      const { data } = await supabase.from("profiles").select("full_name, role").eq("id", user.id).single()
+      profile = data
+    }
+  } catch (error) {
+    // No session exists, user is browsing publicly
+    console.log("[v0] No active session, showing public view")
   }
 
   // Build query

@@ -19,9 +19,22 @@ export function ApproveCommentButton({ commentId }: ApproveCommentButtonProps) {
     const supabase = createClient()
 
     try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+
       const { error } = await supabase.from("comments").update({ is_approved: true }).eq("id", commentId)
 
       if (error) throw error
+
+      if (user) {
+        await supabase.from("admin_actions").insert({
+          admin_id: user.id,
+          action_type: "approve_comment",
+          target_id: commentId,
+          target_type: "comment",
+        })
+      }
 
       router.refresh()
     } catch (error) {

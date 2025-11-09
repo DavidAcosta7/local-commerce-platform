@@ -19,6 +19,19 @@ export function RejectCommentButton({ commentId }: RejectCommentButtonProps) {
     const supabase = createClient()
 
     try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+
+      if (user) {
+        await supabase.from("admin_actions").insert({
+          admin_id: user.id,
+          action_type: "reject_comment",
+          target_id: commentId,
+          target_type: "comment",
+        })
+      }
+
       const { error } = await supabase.from("comments").delete().eq("id", commentId)
 
       if (error) throw error

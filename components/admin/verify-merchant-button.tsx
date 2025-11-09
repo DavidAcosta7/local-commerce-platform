@@ -19,9 +19,22 @@ export function VerifyMerchantButton({ merchantId }: VerifyMerchantButtonProps) 
     const supabase = createClient()
 
     try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+
       const { error } = await supabase.from("merchants").update({ is_verified: true }).eq("id", merchantId)
 
       if (error) throw error
+
+      if (user) {
+        await supabase.from("admin_actions").insert({
+          admin_id: user.id,
+          action_type: "verify_merchant",
+          target_id: merchantId,
+          target_type: "merchant",
+        })
+      }
 
       router.refresh()
     } catch (error) {
