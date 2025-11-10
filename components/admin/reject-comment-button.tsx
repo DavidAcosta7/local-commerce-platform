@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { X, Loader2 } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
 
 interface RejectCommentButtonProps {
   commentId: string
@@ -12,6 +13,7 @@ interface RejectCommentButtonProps {
 
 export function RejectCommentButton({ commentId }: RejectCommentButtonProps) {
   const router = useRouter()
+  const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
 
   const handleReject = async () => {
@@ -21,25 +23,43 @@ export function RejectCommentButton({ commentId }: RejectCommentButtonProps) {
     try {
       const {
         data: { user },
+        error: userError,
       } = await supabase.auth.getUser()
 
-      if (user) {
-        await supabase.from("admin_actions").insert({
-          admin_id: user.id,
-          action_type: "reject_comment",
-          target_id: commentId,
-          target_type: "comment",
-        })
+      if (userError || !user) {
+        throw new Error("No se pudo obtener el usuario")
       }
 
-      const { error } = await supabase.from("comments").delete().eq("id", commentId)
+      const { error: logError } = await supabase.from("admin_actions").insert({
+        admin_id: user.id,
+        action_type: "reject_comment",
+        target_id: commentId,
+        target_type: "comment",
+      })
 
-      if (error) throw error
+      if (logError) {
+        console.error("Error logging admin action:", logError)
+      }
 
-      router.refresh()
+      const { error: deleteError } = await supabase.from("comments").delete().eq("id", commentId)
+
+      if (deleteError) throw deleteError
+
+      toast({
+        title: "Comentario rechazado",
+        description: "El comentario ha sido eliminado exitosamente",
+      })
+
+      setTimeout(() => {
+        window.location.reload()
+      }, 1000)
     } catch (error) {
       console.error("Error rejecting comment:", error)
-    } finally {
+      toast({
+        title: "Error",
+        description: "No se pudo rechazar el comentario. Intenta nuevamente.",
+        variant: "destructive",
+      })
       setIsLoading(false)
     }
   }
