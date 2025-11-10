@@ -1,11 +1,11 @@
 import { createClient } from "@/lib/supabase/server"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { UserNav } from "@/components/user-nav"
 import Link from "next/link"
 import { redirect } from "next/navigation"
 import { Store, Plus, Eye, Edit } from "lucide-react"
 import { DeleteMerchantButton } from "@/components/delete-merchant-button"
+import SiteHeader from "@/components/site-header"
 
 export default async function PanelPage() {
   const supabase = await createClient()
@@ -51,26 +51,7 @@ export default async function PanelPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-orange-50">
       {/* Header */}
-      <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <Store className="h-6 w-6 text-blue-600" />
-            <span className="text-xl font-bold text-gray-900">Comercio Local</span>
-          </Link>
-          <nav className="flex items-center gap-4">
-            <Button variant="ghost" asChild>
-              <Link href="/comercios">Explorar</Link>
-            </Button>
-            <Button variant="ghost" asChild>
-              <Link href="/panel">Mis Comercios</Link>
-            </Button>
-            <Button variant="ghost" asChild>
-              <Link href="/ranking">Ranking</Link>
-            </Button>
-            <UserNav user={user} profile={profile} />
-          </nav>
-        </div>
-      </header>
+      <SiteHeader />
 
       {/* Content */}
       <div className="container mx-auto px-4 py-8">

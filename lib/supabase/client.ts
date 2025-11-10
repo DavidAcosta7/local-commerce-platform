@@ -2,23 +2,13 @@ import { createBrowserClient } from "@supabase/ssr"
 import type { SupabaseClient } from "@supabase/supabase-js"
 
 if (typeof window !== "undefined") {
-  const originalConsoleLog = console.log
-  const originalConsoleWarn = console.warn
-
-  console.log = (...args: any[]) => {
-    const message = args.join(" ")
-    if (message.includes("GoTrueClient") || message.includes("Multiple GoTrueClient instances")) {
-      return
-    }
-    originalConsoleLog(...args)
-  }
-
+  const originalWarn = console.warn
   console.warn = (...args: any[]) => {
-    const message = args.join(" ")
-    if (message.includes("GoTrueClient") || message.includes("Multiple GoTrueClient instances")) {
+    const message = args[0]?.toString() || ""
+    if (message.includes("GoTrueClient") || message.includes("Multiple") || message.includes("same browser context")) {
       return
     }
-    originalConsoleWarn(...args)
+    originalWarn.apply(console, args)
   }
 }
 

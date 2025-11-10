@@ -1,25 +1,13 @@
 import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
 
-const originalConsoleLog = console.log
-const originalConsoleWarn = console.warn
-
-if (typeof window === "undefined") {
-  console.log = (...args: any[]) => {
-    const message = args.join(" ")
-    if (message.includes("GoTrueClient") || message.includes("Multiple GoTrueClient instances")) {
-      return
-    }
-    originalConsoleLog(...args)
+const originalWarn = console.warn
+console.warn = (...args: any[]) => {
+  const message = args[0]?.toString() || ""
+  if (message.includes("GoTrueClient") || message.includes("Multiple") || message.includes("same browser context")) {
+    return
   }
-
-  console.warn = (...args: any[]) => {
-    const message = args.join(" ")
-    if (message.includes("GoTrueClient") || message.includes("Multiple GoTrueClient instances")) {
-      return
-    }
-    originalConsoleWarn(...args)
-  }
+  originalWarn.apply(console, args)
 }
 
 export async function createClient() {

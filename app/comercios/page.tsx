@@ -2,9 +2,7 @@ import { createClient } from "@/lib/supabase/server"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { UserNav } from "@/components/user-nav"
 import { MerchantCard } from "@/components/merchant-card"
-import Link from "next/link"
 import { Store, Search } from "lucide-react"
 
 interface PageProps {
@@ -73,43 +71,6 @@ export default async function ComerciosPage({ searchParams }: PageProps) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-orange-50">
-      {/* Header */}
-      <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <Store className="h-6 w-6 text-blue-600" />
-            <span className="text-xl font-bold text-gray-900">Comercio Local</span>
-          </Link>
-          <nav className="flex items-center gap-4">
-            {user ? (
-              <>
-                <Button variant="ghost" asChild>
-                  <Link href="/comercios">Explorar</Link>
-                </Button>
-                {profile?.role === "merchant" && (
-                  <Button variant="ghost" asChild>
-                    <Link href="/panel">Mis Comercios</Link>
-                  </Button>
-                )}
-                <Button variant="ghost" asChild>
-                  <Link href="/ranking">Ranking</Link>
-                </Button>
-                <UserNav user={user} profile={profile} />
-              </>
-            ) : (
-              <>
-                <Button variant="ghost" asChild>
-                  <Link href="/auth/login">Iniciar Sesión</Link>
-                </Button>
-                <Button asChild>
-                  <Link href="/auth/registro">Registrarse</Link>
-                </Button>
-              </>
-            )}
-          </nav>
-        </div>
-      </header>
-
       {/* Content */}
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">

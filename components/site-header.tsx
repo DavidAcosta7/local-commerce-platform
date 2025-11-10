@@ -78,3 +78,5 @@ export async function SiteHeader() {
     </header>
   )
 }
+
+export default SiteHeader
