@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { LogOut, User, Store, Trophy } from "lucide-react"
+import { LogOut, User, Store, Trophy, Shield } from "lucide-react"
 import { useRouter } from "next/navigation"
 import type { User as SupabaseUser } from "@supabase/supabase-js"
 
@@ -56,6 +56,12 @@ export function UserNav({ user, profile }: UserNavProps) {
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">{profile?.full_name || "Usuario"}</p>
             <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+            {profile?.role === "admin" && (
+              <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-700 mt-1">
+                <Shield className="mr-1 h-3 w-3" />
+                Administrador
+              </span>
+            )}
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
@@ -63,6 +69,12 @@ export function UserNav({ user, profile }: UserNavProps) {
           <User className="mr-2 h-4 w-4" />
           Perfil
         </DropdownMenuItem>
+        {profile?.role === "admin" && (
+          <DropdownMenuItem onClick={() => router.push("/admin")}>
+            <Shield className="mr-2 h-4 w-4" />
+            Panel de Administración
+          </DropdownMenuItem>
+        )}
         {profile?.role === "merchant" && (
           <DropdownMenuItem onClick={() => router.push("/panel")}>
             <Store className="mr-2 h-4 w-4" />

@@ -13,30 +13,26 @@ BEGIN
   ) INTO user_exists;
 
   IF user_exists THEN
-    -- Actualizar el rol a admin
+    -- Actualizar el rol a admin sin usar updated_at (no existe en profiles)
     UPDATE profiles
-    SET 
-      role = 'admin',
-      updated_at = NOW()
+    SET role = 'admin'
     WHERE email = 'kanekikirito010@gmail.com'
     RETURNING id INTO user_profile_id;
     
     RAISE NOTICE '✅ Usuario convertido exitosamente a ADMIN';
     RAISE NOTICE 'ID del usuario: %', user_profile_id;
   ELSE
-    -- Si no existe, intentar crearlo desde auth.users
-    INSERT INTO profiles (id, email, role, user_type, created_at, updated_at)
+    -- Si no existe, intentar crearlo desde auth.users (sin user_type ni updated_at)
+    INSERT INTO profiles (id, email, role, created_at)
     SELECT 
       au.id,
       au.email,
       'admin',
-      COALESCE(au.raw_user_meta_data->>'user_type', 'customer'),
-      au.created_at,
-      NOW()
+      au.created_at
     FROM auth.users au
     WHERE au.email = 'kanekikirito010@gmail.com'
     ON CONFLICT (id) DO UPDATE
-    SET role = 'admin', updated_at = NOW()
+    SET role = 'admin'
     RETURNING id INTO user_profile_id;
     
     IF user_profile_id IS NOT NULL THEN
@@ -53,9 +49,8 @@ END $$;
 SELECT 
   id,
   email,
+  full_name,
   role,
-  user_type,
-  created_at,
-  updated_at
+  created_at
 FROM profiles
 WHERE email = 'kanekikirito010@gmail.com';

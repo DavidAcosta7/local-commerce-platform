@@ -29,16 +29,33 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Protect routes that require authentication
-  if (
-    !user &&
-    !request.nextUrl.pathname.startsWith("/auth") &&
-    !request.nextUrl.pathname.startsWith("/_next") &&
-    request.nextUrl.pathname !== "/" &&
-    !request.nextUrl.pathname.startsWith("/comercios")
-  ) {
+  const publicRoutes = [
+    "/",
+    "/comercios",
+    "/ranking",
+    "/logros",
+    "/auth/login",
+    "/auth/registro",
+    "/auth/verificar-email",
+  ]
+
+  const isPublicRoute = publicRoutes.some(
+    (route) => request.nextUrl.pathname === route || request.nextUrl.pathname.startsWith(route + "/"),
+  )
+
+  const isNextInternalRoute =
+    request.nextUrl.pathname.startsWith("/_next") || request.nextUrl.pathname.startsWith("/api")
+
+  if (!user && !isPublicRoute && !isNextInternalRoute) {
     const url = request.nextUrl.clone()
     url.pathname = "/auth/login"
+    url.searchParams.set("redirect", request.nextUrl.pathname)
+    return NextResponse.redirect(url)
+  }
+
+  if (user && request.nextUrl.pathname.startsWith("/auth")) {
+    const url = request.nextUrl.clone()
+    url.pathname = "/"
     return NextResponse.redirect(url)
   }
 
