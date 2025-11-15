@@ -5,9 +5,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { UserNav } from "@/components/user-nav"
 import { PendingComments } from "@/components/admin/pending-comments"
 import { MerchantVerification } from "@/components/admin/merchant-verification"
+import { UserManagement } from "@/components/admin/user-management"
+import { AdminReports } from "@/components/admin/admin-reports"
+import { AdminActivity } from "@/components/admin/admin-activity"
+import { AllMerchants } from "@/components/admin/all-merchants"
+import { AllComments } from "@/components/admin/all-comments"
 import Link from "next/link"
 import { redirect } from "next/navigation"
-import { Store, ShieldCheck, MessageSquare, Users, Building2 } from "lucide-react"
+import { Store, ShieldCheck, MessageSquare, Users, Building2, FileText, Activity } from "lucide-react"
 
 export default async function AdminPage() {
   const supabase = await createClient()
@@ -40,6 +45,16 @@ export default async function AdminPage() {
   const { count: totalUsersCount } = await supabase.from("profiles").select("*", { count: "exact", head: true })
 
   const { count: totalMerchantsCount } = await supabase.from("merchants").select("*", { count: "exact", head: true })
+
+  const { count: approvedCommentsCount } = await supabase
+    .from("comments")
+    .select("*", { count: "exact", head: true })
+    .eq("is_approved", true)
+
+  const { count: verifiedMerchantsCount } = await supabase
+    .from("merchants")
+    .select("*", { count: "exact", head: true })
+    .eq("is_verified", true)
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-orange-50">
@@ -133,10 +148,10 @@ export default async function AdminPage() {
 
         {/* Tabs */}
         <Tabs defaultValue="comments" className="space-y-6">
-          <TabsList>
+          <TabsList className="flex flex-wrap h-auto">
             <TabsTrigger value="comments">
               <MessageSquare className="mr-2 h-4 w-4" />
-              Comentarios Pendientes
+              Pendientes
               {pendingCommentsCount && pendingCommentsCount > 0 ? (
                 <span className="ml-2 bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full text-xs">
                   {pendingCommentsCount}
@@ -145,12 +160,32 @@ export default async function AdminPage() {
             </TabsTrigger>
             <TabsTrigger value="merchants">
               <Building2 className="mr-2 h-4 w-4" />
-              Verificar Comercios
+              Verificar
               {unverifiedMerchantsCount && unverifiedMerchantsCount > 0 ? (
                 <span className="ml-2 bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full text-xs">
                   {unverifiedMerchantsCount}
                 </span>
               ) : null}
+            </TabsTrigger>
+            <TabsTrigger value="users">
+              <Users className="mr-2 h-4 w-4" />
+              Usuarios
+            </TabsTrigger>
+            <TabsTrigger value="all-merchants">
+              <Building2 className="mr-2 h-4 w-4" />
+              Comercios
+            </TabsTrigger>
+            <TabsTrigger value="all-comments">
+              <MessageSquare className="mr-2 h-4 w-4" />
+              Comentarios
+            </TabsTrigger>
+            <TabsTrigger value="reports">
+              <FileText className="mr-2 h-4 w-4" />
+              Reportes
+            </TabsTrigger>
+            <TabsTrigger value="activity">
+              <Activity className="mr-2 h-4 w-4" />
+              Auditoría
             </TabsTrigger>
           </TabsList>
 
@@ -160,6 +195,33 @@ export default async function AdminPage() {
 
           <TabsContent value="merchants">
             <MerchantVerification />
+          </TabsContent>
+
+          <TabsContent value="users">
+            <UserManagement />
+          </TabsContent>
+
+          <TabsContent value="all-merchants">
+            <AllMerchants />
+          </TabsContent>
+
+          <TabsContent value="all-comments">
+            <AllComments />
+          </TabsContent>
+
+          <TabsContent value="reports">
+            <AdminReports
+              totalUsers={totalUsersCount || 0}
+              totalMerchants={totalMerchantsCount || 0}
+              totalComments={approvedCommentsCount || 0}
+              verifiedMerchants={verifiedMerchantsCount || 0}
+              pendingComments={pendingCommentsCount || 0}
+              unverifiedMerchants={unverifiedMerchantsCount || 0}
+            />
+          </TabsContent>
+
+          <TabsContent value="activity">
+            <AdminActivity />
           </TabsContent>
         </Tabs>
       </div>

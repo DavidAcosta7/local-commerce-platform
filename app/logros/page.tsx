@@ -8,26 +8,34 @@ import { Store, Trophy, Lock } from "lucide-react"
 export default async function LogrosPage() {
   const supabase = await createClient()
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
+  let user = null
   let profile = null
   let userAchievementIds: string[] = []
 
-  if (user) {
-    const { data: profileData } = await supabase.from("profiles").select("full_name, role").eq("id", user.id).single()
-    profile = profileData
+  try {
+    const {
+      data: { user: authUser },
+      error,
+    } = await supabase.auth.getUser()
+    if (!error && authUser) {
+      user = authUser
 
-    // Get user's achievements
-    const { data: userAchievements } = await supabase
-      .from("user_achievements")
-      .select("achievement_id")
-      .eq("user_id", user.id)
+      const { data: profileData } = await supabase.from("profiles").select("full_name, role").eq("id", user.id).single()
+      profile = profileData
 
-    if (userAchievements) {
-      userAchievementIds = userAchievements.map((ua) => ua.achievement_id)
+      // Get user's achievements
+      const { data: userAchievements } = await supabase
+        .from("user_achievements")
+        .select("achievement_id")
+        .eq("user_id", user.id)
+
+      if (userAchievements) {
+        userAchievementIds = userAchievements.map((ua) => ua.achievement_id)
+      }
     }
+  } catch (error) {
+    // No session exists, user is browsing publicly
+    console.log("[v0] No active session, showing public view")
   }
 
   // Get all achievements

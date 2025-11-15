@@ -1,63 +1,30 @@
 import { createClient } from "@/lib/supabase/server"
 import { Button } from "@/components/ui/button"
-import { UserNav } from "@/components/user-nav"
 import Link from "next/link"
 import { Store, MapPin, Search } from "lucide-react"
 
 export default async function HomePage() {
   const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
 
+  let user = null
   let profile = null
-  if (user) {
-    const { data } = await supabase.from("profiles").select("full_name, role").eq("id", user.id).single()
-    profile = data
+
+  try {
+    const {
+      data: { user: authUser },
+      error,
+    } = await supabase.auth.getUser()
+    if (!error && authUser) {
+      user = authUser
+      const { data } = await supabase.from("profiles").select("full_name, role").eq("id", user.id).single()
+      profile = data
+    }
+  } catch (error) {
+    // No session exists, user is browsing publicly
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-orange-50">
-      {/* Header */}
-      <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <Store className="h-6 w-6 text-blue-600" />
-            <span className="text-xl font-bold text-gray-900">Comercio Local</span>
-          </Link>
-          <nav className="flex items-center gap-4">
-            {user ? (
-              <>
-                <Button variant="ghost" asChild>
-                  <Link href="/comercios">Explorar</Link>
-                </Button>
-                {profile?.role === "merchant" && (
-                  <Button variant="ghost" asChild>
-                    <Link href="/panel">Mis Comercios</Link>
-                  </Button>
-                )}
-                <Button variant="ghost" asChild>
-                  <Link href="/ranking">Ranking</Link>
-                </Button>
-                <UserNav user={user} profile={profile} />
-              </>
-            ) : (
-              <>
-                <Button variant="ghost" asChild>
-                  <Link href="/comercios">Explorar</Link>
-                </Button>
-                <Button variant="ghost" asChild>
-                  <Link href="/auth/login">Iniciar Sesión</Link>
-                </Button>
-                <Button asChild>
-                  <Link href="/auth/registro">Registrarse</Link>
-                </Button>
-              </>
-            )}
-          </nav>
-        </div>
-      </header>
-
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-16 md:py-24">
         <div className="max-w-3xl mx-auto text-center space-y-6">
@@ -85,7 +52,6 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
-
       {/* Features */}
       <section className="container mx-auto px-4 py-16 bg-white/50 rounded-xl">
         <div className="grid md:grid-cols-3 gap-8">
