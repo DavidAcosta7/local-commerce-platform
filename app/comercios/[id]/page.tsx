@@ -34,7 +34,6 @@ export default async function MerchantDetailPage({ params }: PageProps) {
     }
   } catch (error) {
     // No session exists, user is browsing publicly
-    console.log("[v0] No active session, showing public view")
   }
 
   // Fetch merchant details

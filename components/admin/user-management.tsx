@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { UpdateUserRoleButton } from "./update-user-role-button"
 import { DeleteUserButton } from "./delete-user-button"
+import { ChangePasswordButton } from "./change-password-button"
 import { Users, Mail } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { es } from "date-fns/locale"
@@ -94,6 +95,7 @@ export async function UserManagement() {
                 </div>
 
                 <div className="flex gap-2">
+                  <ChangePasswordButton userId={user.id} userEmail={user.email} />
                   <UpdateUserRoleButton userId={user.id} currentRole={user.role} />
                   <DeleteUserButton userId={user.id} userName={user.full_name || user.email} />
                 </div>

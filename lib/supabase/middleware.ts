@@ -42,6 +42,8 @@ export async function updateSession(request: NextRequest) {
     "/auth/login",
     "/auth/registro",
     "/auth/verificar-email",
+    "/auth/forgot-password",
+    "/auth/reset-password",
   ]
 
   const isPublicRoute = publicRoutes.some(
@@ -58,7 +60,12 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  if (user && request.nextUrl.pathname.startsWith("/auth")) {
+  // Permitir acceso a reset-password incluso si hay usuario (para el flujo de restablecimiento)
+  if (
+    user &&
+    request.nextUrl.pathname.startsWith("/auth") &&
+    !request.nextUrl.pathname.startsWith("/auth/reset-password")
+  ) {
     const url = request.nextUrl.clone()
     url.pathname = "/"
     return NextResponse.redirect(url)

@@ -35,7 +35,6 @@ export default async function LogrosPage() {
     }
   } catch (error) {
     // No session exists, user is browsing publicly
-    console.log("[v0] No active session, showing public view")
   }
 
   // Get all achievements

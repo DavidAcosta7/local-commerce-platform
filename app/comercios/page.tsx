@@ -31,7 +31,6 @@ export default async function ComerciosPage({ searchParams }: PageProps) {
     }
   } catch (error) {
     // No session exists, user is browsing publicly
-    console.log("[v0] No active session, showing public view")
   }
 
   // Build query

@@ -10,9 +10,10 @@ import { AdminReports } from "@/components/admin/admin-reports"
 import { AdminActivity } from "@/components/admin/admin-activity"
 import { AllMerchants } from "@/components/admin/all-merchants"
 import { AllComments } from "@/components/admin/all-comments"
+import { AdminPasswordManager } from "@/components/admin/admin-password-manager"
 import Link from "next/link"
 import { redirect } from "next/navigation"
-import { Store, ShieldCheck, MessageSquare, Users, Building2, FileText, Activity } from "lucide-react"
+import { Store, ShieldCheck, MessageSquare, Users, Building2, FileText, Activity, Key } from "lucide-react"
 
 export default async function AdminPage() {
   const supabase = await createClient()
@@ -187,6 +188,10 @@ export default async function AdminPage() {
               <Activity className="mr-2 h-4 w-4" />
               Auditoría
             </TabsTrigger>
+            <TabsTrigger value="passwords">
+              <Key className="mr-2 h-4 w-4" />
+              Contraseñas
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="comments">
@@ -222,6 +227,10 @@ export default async function AdminPage() {
 
           <TabsContent value="activity">
             <AdminActivity />
+          </TabsContent>
+
+          <TabsContent value="passwords">
+            <AdminPasswordManager />
           </TabsContent>
         </Tabs>
       </div>
