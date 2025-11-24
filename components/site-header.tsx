@@ -5,7 +5,17 @@ import { Button } from "@/components/ui/button"
 import { Store, Shield } from "lucide-react"
 
 export async function SiteHeader() {
-  const supabase = await createClient()
+  let supabase
+  try {
+    supabase = await createClient()
+  } catch (error) {
+    // If client creation fails entirely, we'll operate in a logged-out state
+    console.error("Failed to create Supabase client:", error)
+    supabase = {
+      auth: { getUser: async () => ({ data: { user: null }, error: null }) },
+      from: () => ({ select: () => ({ eq: () => ({ single: async () => ({ data: null }) }) }) }),
+    } as any
+  }
 
   let user = null
   let profile = null

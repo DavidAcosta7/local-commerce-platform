@@ -1,24 +1,44 @@
 import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
 
-const originalWarn = console.warn
-console.warn = (...args: any[]) => {
-  const message = args[0]?.toString() || ""
-  if (message.includes("GoTrueClient") || message.includes("Multiple") || message.includes("same browser context")) {
-    return
-  }
-  originalWarn.apply(console, args)
-}
-
 export async function createClient() {
   const cookieStore = await cookies()
 
-  return createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+  if (!supabaseUrl || !supabaseKey) {
+    return {
+      auth: {
+        getUser: async () => ({ data: { user: null }, error: null }),
+        signOut: async () => ({ error: null }),
+      },
+      from: () => ({
+        select: () => ({
+          eq: () => ({
+            single: async () => ({ data: null, error: null }),
+            maybeSingle: async () => ({ data: null, error: null }),
+            order: () => ({ limit: async () => ({ data: [], error: null }) }),
+          }),
+          order: () => ({ limit: async () => ({ data: [], error: null }) }),
+          insert: async () => ({ error: null }),
+          update: async () => ({ error: null }),
+          delete: async () => ({ error: null }),
+        }),
+      }),
+    } as any
+  }
+
+  // Use a stable storage key based on the project URL
+  const projectId = supabaseUrl.split("//")[1]?.split(".")[0] || "project"
+  const storageKey = `sb-${projectId}-auth-token`
+
+  return createServerClient(supabaseUrl, supabaseKey, {
     auth: {
       debug: false,
       persistSession: true,
       autoRefreshToken: true,
-      storageKey: `sb-${process.env.NEXT_PUBLIC_SUPABASE_URL?.split("//")[1]?.split(".")[0]}-auth-token`,
+      storageKey: storageKey,
     },
     cookies: {
       getAll() {
