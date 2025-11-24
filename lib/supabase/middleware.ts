@@ -1,0 +1,75 @@
+import { createServerClient } from "@supabase/ssr"
+import { NextResponse, type NextRequest } from "next/server"
+
+export async function updateSession(request: NextRequest) {
+  let supabaseResponse = NextResponse.next({
+    request,
+  })
+
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    console.warn("Supabase environment variables are missing in middleware.")
+    return supabaseResponse
+  }
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll()
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+          supabaseResponse = NextResponse.next({
+            request,
+          })
+          cookiesToSet.forEach(({ name, value, options }) => supabaseResponse.cookies.set(name, value, options))
+        },
+      },
+    },
+  )
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  const publicRoutes = [
+    "/",
+    "/comercios",
+    "/ranking",
+    "/logros",
+    "/auth/login",
+    "/auth/registro",
+    "/auth/verificar-email",
+    "/auth/forgot-password",
+    "/auth/reset-password",
+  ]
+
+  const isPublicRoute = publicRoutes.some(
+    (route) => request.nextUrl.pathname === route || request.nextUrl.pathname.startsWith(route + "/"),
+  )
+
+  const isNextInternalRoute =
+    request.nextUrl.pathname.startsWith("/_next") || request.nextUrl.pathname.startsWith("/api")
+
+  if (!user && !isPublicRoute && !isNextInternalRoute) {
+    const url = request.nextUrl.clone()
+    url.pathname = "/auth/login"
+    url.searchParams.set("redirect", request.nextUrl.pathname)
+    return NextResponse.redirect(url)
+  }
+
+  // Permitir acceso a reset-password incluso si hay usuario (para el flujo de restablecimiento)
+  if (
+    user &&
+    request.nextUrl.pathname.startsWith("/auth") &&
+    !request.nextUrl.pathname.startsWith("/auth/reset-password")
+  ) {
+    const url = request.nextUrl.clone()
+    url.pathname = "/"
+    return NextResponse.redirect(url)
+  }
+
+  return supabaseResponse
+}
